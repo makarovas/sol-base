@@ -14,7 +14,7 @@ contract VotingSystem {
     uint public candidatesCounter;
 
     constructor(string[] memory candidatesNames) {
-        for (uint i = 0; i < candidatesNames; i++) {
+        for (uint i = 0; i < candidatesNames.length; i++) {
             addCandidate(candidatesNames[i]);
         }
     }
@@ -24,21 +24,22 @@ contract VotingSystem {
         candidates[candidatesCounter] = Candidate(candidatesCounter, name, 0);
     }
 
-    function vote(uint candidateId) public {
-        require(!voters[msg.sender], "your have already voted");
+    function validateCandidateId(uint candidateId) internal view {
         require(
             candidateId > 0 && candidateId <= candidatesCounter,
             "Invalid Candidate Id"
         );
+    }
+
+    function vote(uint candidateId) public {
+        require(!voters[msg.sender], "You have already voted");
+        validateCandidateId(candidateId);
         voters[msg.sender] = true;
         candidates[candidateId].voteCount++;
     }
 
     function getTotalVotes(uint candidateId) public view returns (uint) {
-        require(
-            candidateId > 0 && candidateId <= candidatesCounter,
-            "Invalid Candidate Id"
-        );
+        validateCandidateId(candidateId);
         return candidates[candidateId].voteCount;
     }
 }
@@ -51,5 +52,3 @@ contract VotingSystem {
 // Gas Optimization: Used memory for temporary variables and storage for permanent variables to optimize gas usage. This contract uses memory for the input in the constructor and storage for the mappings.
 
 // Avoided Loops in Transactions: Loops that grow with the number of participants can cause the contract to hit the gas limit. Here, loops are only used in the constructor, which is acceptable.
-
-
